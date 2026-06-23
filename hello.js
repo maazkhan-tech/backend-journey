@@ -31,16 +31,13 @@ function sendJSON(res, statusCode, data) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
 }
-
 const server = http.createServer(async (req, res) => {
   const { method, url } = req;
 
-  // Route: GET /tasks
   if (method === 'GET' && url === '/tasks') {
     return sendJSON(res, 200, { data: tasks });
   }
 
-  // Route: POST /tasks
   if (method === 'POST' && url === '/tasks') {
     try {
       const body = await readBody(req);
@@ -55,22 +52,49 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // Route: GET /tasks/:id
   const taskMatch = url.match(/^\/tasks\/(\d+)$/);
+  const taskIndex = taskMatch
+    ? tasks.findIndex(t => t.id === parseInt(taskMatch[1]))
+    : -1;
+
   if (method === 'GET' && taskMatch) {
-    const id = parseInt(taskMatch[1]);
-    const task = tasks.find(t => t.id === id);
-    if (!task) {
+    if (taskIndex === -1) {
       return sendJSON(res, 404, { error: { message: 'Task not found' } });
     }
-    return sendJSON(res, 200, { data: task });
+    return sendJSON(res, 200, { data: tasks[taskIndex] });
   }
+
+  if (method === 'PATCH' && taskMatch) {
+    if (taskIndex === -1) {
+      return sendJSON(res, 404, { error: { message: 'Task not found' } });
+    }
+    try {
+      const body = await readBody(req);
+      if (body.done === undefined) {
+        return sendJSON(res, 400, { error: { message: 'done status is required' } });
+      }
+      tasks[taskIndex].done = !!body.done;
+      return sendJSON(res, 200, { data: tasks[taskIndex] });
+    } catch {
+      return sendJSON(res, 400, { error: { message: 'Invalid JSON body' } });
+    }
+  }
+
+  if (method === 'DELETE' && taskMatch) {
+    if (taskIndex === -1) {
+      return sendJSON(res, 404, { error: { message: 'Task not found' } });
+    }
+    tasks.splice(taskIndex, 1);
+    res.writeHead(204);
+    return res.end();
+  }
+
+  sendJSON(res, 404, { error: { message: 'Route not found' } });
+});
 
   
 
-  // Fallback: 404
-  sendJSON(res, 404, { error: { message: 'Route not found' } });
-});
+
 
 server.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
