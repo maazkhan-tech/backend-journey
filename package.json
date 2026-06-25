@@ -19,9 +19,9 @@
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/maazkhan-tech/backend-jounrney/issues"
+    "url": "https://github.com/maazkhan-tech/backend-journey/issues"
   },
-  "homepage": "https://github.com/maazkhan-tech/backend-jounrney#readme",
+  "homepage": "https://github.com/maazkhan-tech/backend-journey#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.0.1",
